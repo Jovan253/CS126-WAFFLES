@@ -229,13 +229,13 @@ public class CustomerStore implements ICustomerStore {
         }
     }
 
-    public static void mergeSortArray(int[] a, int n) {
+    public static void mergeSortArray(Customer[] a, int n, boolean isID) {
         if (n < 2) {
             return;
         }
         int mid = n / 2;
-        int[] l = new int[mid];
-        int[] r = new int[n - mid];
+        Customer[] l = new Customer[mid];
+        Customer[] r = new Customer[n - mid];
     
         for (int i = 0; i < mid; i++) {
             l[i] = a[i];
@@ -246,28 +246,55 @@ public class CustomerStore implements ICustomerStore {
         mergeSort(l, mid);
         mergeSort(r, n - mid);
     
-        merge(a, l, r, mid, n - mid);
+        merge(a, l, r, mid, n - mid, isID);
     }
 
-    public static void mergeArray(
-    int[] a, int[] l, int[] r, int left, int right) {
+    public static void mergeArray(Customer[] a, Customer[] l, Customer[] r, int left, int right, boolean isID) {
  
-    int i = 0, j = 0, k = 0;
-    while (i < left && j < right) {
-        if (l[i] <= r[j]) {
+        int i = 0, j = 0, k = 0;
+        if (isID == true){
+            while (i < left && j < right) {
+                if (l[i].getID() <= r[j].getID()) {
+                    a[k++] = l[i++];
+                }
+                else {
+                    a[k++] = r[j++];
+                }
+            }
+        }
+        else{
+            while (i < left && j < right) {
+                if (l[i].getLastName() < r[j].getLastName()) {
+                    a[k++] = l[i++];
+                }
+                else if (l[i].getLastName() > r[j].getLastName()){
+                    a[k++] = r[j++];
+                }
+                else{
+                    if (l[i].getFirstName() < r[j].getFirstName()) {
+                        a[k++] = l[i++];
+                    }
+                    else if (l[i].getFirstName() > r[j].getFirstName()){
+                        a[k++] = r[j++];
+                    }
+                    else{
+                        if (l[i].getID() <= r[j].getID()) {
+                            a[k++] = l[i++];
+                        }
+                        else {
+                            a[k++] = r[j++];
+                        }
+                    }
+                }
+            }
+        }
+        while (i < left) {
             a[k++] = l[i++];
         }
-        else {
+        while (j < right) {
             a[k++] = r[j++];
         }
     }
-    while (i < left) {
-        a[k++] = l[i++];
-    }
-    while (j < right) {
-        a[k++] = r[j++];
-    }
-}
 
     
     public Customer[] getCustomers() { // order array in terms of ID   
@@ -276,9 +303,8 @@ public class CustomerStore implements ICustomerStore {
     }
 
     public Customer[] getCustomers(Customer[] customers) { 
-        //boolean isID = true;          
-        //return mergeSort(customers);
-        // need different method for this one        
+        boolean isID = true;          
+        return mergeSortArray(customers);               
     }
 
     public Customer[] getCustomersByName() {
@@ -287,8 +313,8 @@ public class CustomerStore implements ICustomerStore {
     }
 
     public Customer[] getCustomersByName(Customer[] customers) {
-        //boolean isID = false;          
-        //return mergeSort(customers);
+        boolean isID = false;          
+        return mergeSortArray(customers);
     }
 
     public Customer[] getCustomersContaining(String searchTerm) {
