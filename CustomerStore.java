@@ -19,13 +19,13 @@ public class CustomerStore implements ICustomerStore {
 
     private MyArrayList<Customer> customerArray;
     private DataChecker dataChecker;
-    private Long[] blacklistArray = new Long[5];   
+    Long[] blacklistArray = new Long[5];
     private int count = 0;
 
     public CustomerStore() {
         // Initialise variables here
         customerArray = new MyArrayList<>();
-        dataChecker = new DataChecker();               
+        dataChecker = new DataChecker();        
     }
 
     public Customer[] loadCustomerDataToArray(InputStream resource) {
@@ -81,9 +81,9 @@ public class CustomerStore implements ICustomerStore {
         return customerArray;
     }
 
-    public void addBlackList(Long id){        
+    public void addBlackList(Long id){
         blacklistArray[count] = 1112223334445556L;
-        count++;        
+        count++;      
     }
 
     public boolean addCustomer(Customer customer) {
@@ -102,7 +102,7 @@ public class CustomerStore implements ICustomerStore {
             }
         }
         for (int j=0;j<blacklistArray.length;j++){
-            if (customer.getID() == blacklistArray[j]){ // only add customer if not a duplicate and valid and blacklists
+            if (customer.getID() == blacklistArray[j]){     
                 //customerArray.remove(customer);
                 return false;          
             } 
@@ -114,28 +114,26 @@ public class CustomerStore implements ICustomerStore {
         if (customers.length == 0){
             return false;
         }
-// doouble check with chingiz
         for (int i=0; i<customers.length;i++){
             addCustomer(customers[i]);
         }
-        return true;                
+        return true; 
     }
 
-    public Customer getCustomer(Long id) {     
-        if (customerArray.isEmpty()){
-            return null;
-        }
-        for (int i=0; i<customerArray.size();i++){
-            if (customerArray.get(i).getID().equals(id)){
-                return customerArray.get(i);        
-            }            
-        }
+    public Customer getCustomer(Long id) {
+        if (customerArray.isEmpty() == false){
+            for (int i=0; i<customerArray.size();i++){
+                if (customerArray.get(i).getID().equals(id)){
+                    return customerArray.get(i);        
+                }            
+            }   
+        }        
         return null;
     }
 
-    public Customer[] mergeSortArray(Customer[] a, int n, boolean isID) {
+    public static void mergeSort(Customer[] a, int n, boolean isID) {
         if (n < 2) {
-            return a;
+            return;
         }
         int mid = n / 2;
         Customer[] l = new Customer[mid];
@@ -147,14 +145,14 @@ public class CustomerStore implements ICustomerStore {
         for (int i = mid; i < n; i++) {
             r[i - mid] = a[i];
         }
-        mergeSortArray(l, mid, isID);
-        mergeSortArray(r, n - mid, isID);
+        mergeSort(l, mid, isID);
+        mergeSort(r, n - mid, isID);
     
-        mergeArray(a, l, r, mid, n - mid, isID);
-        return null;
+        merge(a, l, r, mid, n - mid, isID);
+        //return null;
     }
 
-    public static void mergeArray(Customer[] a, Customer[] l, Customer[] r, int left, int right, boolean isID) {
+    public static void merge(Customer[] a, Customer[] l, Customer[] r, int left, int right, boolean isID) {
  
         int i = 0, j = 0, k = 0;
         if (isID == true){
@@ -198,79 +196,111 @@ public class CustomerStore implements ICustomerStore {
         }
         while (j < right) {
             a[k++] = r[j++];
-        }
+        }        
     }
 
     
     public Customer[] getCustomers() { // order array in terms of ID   
-        boolean isID = true;   
-        Customer[] array = new Customer[256]; 
-        if (customerArray.isEmpty()){
-            return null;
-        } 
-        //customerArray = mergeSort(customerArray, isID);
-        for (int i=0;i<customerArray.size();i++){ // potentially implement toArray
-            array[i] = customerArray.get(i);          
-        }
+        boolean isID = true;                      
+        Customer[] array = new Customer[customerArray.size()];   
         
-        if (array.length == 0){
-            return null;
+        for (int i=0;i<array.length;i++){ // potentially implement toArray
+            array[i] = customerArray.get(i);         
+            System.out.println(customerArray.get(i).getFirstName());   
         }
-        array = mergeSortArray(array, array.length, isID);
+                      
+        mergeSort(array, array.length, isID);
         return array;
     }
 
     public Customer[] getCustomers(Customer[] customers) { 
-        if (customers.length == 0){
-            return null;
-        }
-        boolean isID = true;          
-        return mergeSortArray(customers, customers.length, isID);               
+        boolean isID = true;              
+        
+        mergeSort(customers, customers.length, isID);                    
+        return customers;
     }
 
     public Customer[] getCustomersByName() {
         boolean isID = false;          
-        Customer[] array = new Customer[256]; 
-        if (customerArray.isEmpty()){
-            return null;
-        }
-        //customerArray = mergeSort(customerArray, isID);
-        for (int i=0;i<customerArray.size();i++){ // potentially implement toArray
+        Customer[] array = new Customer[customerArray.size()];          
+        for (int i=0;i<array.length;i++){ 
             array[i] = customerArray.get(i);
         }
-        array = mergeSortArray(array, array.length, isID);
+        
+        mergeSort(array, array.length, isID);
         return array;        
     }
 
     public Customer[] getCustomersByName(Customer[] customers) {
-        if (customers.length == 0){
-            return null;
-        }
         boolean isID = false;          
-        return mergeSortArray(customers, customers.length, isID);
+        
+        mergeSort(customers, customers.length, isID);              
+        return customers;
+    }
+
+    public static int isSubstring(String s1, String s2){        
+        int M = s1.length();
+        int N = s2.length();
+ 
+        /* A loop to slide pat[] one by one */
+        for (int i = 0; i <= N - M; i++) {
+            int j;
+ 
+            /* For current index i, check for
+            pattern match */
+            for (j = 0; j < M; j++)
+                if (s2.charAt(i + j)
+                    != s1.charAt(j))
+                    break;
+ 
+            if (j == M)
+                return i;
+        }
+ 
+        return -1;
     }
 
     public Customer[] getCustomersContaining(String searchTerm) {
         boolean isID = false;
+        boolean twoNames = false;        
+        int counter = 0;
+        String searchTermNew;
         Customer[] same = new Customer[customerArray.size()];
-        MyArrayList<Customer> sameArray = new MyArrayList<>();
-        for (int i=0;i<customerArray.size();i++){
-            if (customerArray.get(i).getFirstName().contains(searchTerm)){
-                sameArray.add(customerArray.get(i));
-            }
-            if (customerArray.get(i).getLastName().contains(searchTerm)){
-                sameArray.add(customerArray.get(i));
-            }
-        }
-        // TODO
-        // String searchTermConverted = stringFormatter.convertAccents(searchTerm);
-        // String searchTermConvertedFaster = stringFormatter.convertAccentsFaster(searchTerm);
 
-        for (int j=0;j<sameArray.size();j++){ // potentially implement toArray
-            same[j] = sameArray.get(j);
+        if (searchTerm.contains("-")){
+            twoNames = true;
+            searchTerm = searchTerm.replace("-", "");
         }
-        same = mergeSortArray(same, same.length, isID)
-        return same;
+
+        searchTermNew = searchTerm.toLowerCase();
+
+        for (int i=0;i<customerArray.size();i++){
+            if(twoNames != true) {                
+                if (customerArray.get(i).getFirstName().toLowerCase().contains(searchTermNew)){                    
+                    same[counter]=customerArray.get(i);
+                    counter++;
+                }
+                else if (customerArray.get(i).getLastName().toLowerCase().contains(searchTermNew)){                    
+                    same[counter]=customerArray.get(i);
+                    counter++;
+                }
+            }
+            else {
+                String joinedWord = customerArray.get(i).getFirstName().toLowerCase() + customerArray.get(i).getLastName().toLowerCase(); // joins the names from customer array
+                if (isSubstring(searchTermNew, joinedWord) != -1) { // if the search term is a subset of the joined customerArray word then we add customer to the array
+                    same[counter]=customerArray.get(i);
+                    counter++;
+                }
+            }
+        }
+
+        Customer[] array = new Customer[counter];
+        for (int j=0;j<counter;j++){
+            array[j] = same[j];
+        }
+
+        mergeSort(array, counter, isID);
+        return array;
     }
 
 }

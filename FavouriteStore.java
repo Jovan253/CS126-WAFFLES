@@ -116,23 +116,126 @@ public class FavouriteStore implements IFavouriteStore {
     }
 
     public Favourite getFavourite(Long id) {
-        // TODO
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getID().equals(id)){
+                    return favouriteArray.get(i);        
+                }            
+            } 
+        }
         return null;
     }
 
+    public static void mergeSort(Favourite[] a, int n, boolean isID) {
+        if (n < 2) {
+            return;
+        }
+        int mid = n / 2;
+        Favourite[] l = new Favourite[mid];
+        Favourite[] r = new Favourite[n - mid];
+    
+        for (int i = 0; i < mid; i++) {
+            l[i] = a[i];
+        }
+        for (int i = mid; i < n; i++) {
+            r[i - mid] = a[i];
+        }
+        mergeSort(l, mid, isID);
+        mergeSort(r, n - mid, isID);
+    
+        merge(a, l, r, mid, n - mid, isID);
+        //return null;
+    }
+
+    public static void merge(Favourite[] a, Favourite[] l, Favourite[] r, int left, int right, boolean isID) {
+ 
+        int i = 0, j = 0, k = 0;
+        if (isID == true){
+            while (i < left && j < right) {
+                if (l[i].getID() <= r[j].getID()) {
+                    a[k++] = l[i++];
+                }
+                else {
+                    a[k++] = r[j++];
+                }
+            }
+        }
+        else{
+            while (i < left && j < right) {
+                if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) < 0) {
+                    a[k++] = l[i++];
+                }
+                else  if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) > 0) {
+                    a[k++] = r[j++];
+                }
+                else{
+                    if (l[i].getID() <= r[j].getID()) {
+                        a[k++] = l[i++];
+                    }
+                    else {
+                        a[k++] = r[j++];
+                    }
+                }
+            }
+        }
+        
+
+
+        while (i < left) {
+            a[k++] = l[i++];
+        }
+        while (j < right) {
+            a[k++] = r[j++];
+        }        
+    }
+
     public Favourite[] getFavourites() {
-        // TODO
-        return new Favourite[0];
+        boolean isID = true;                      
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        // size fukcing zero??????
+
+        for (int i=0;i<array.length;i++){
+            array[i] = favouriteArray.get(i);                      
+        }
+                      
+        mergeSort(array, array.length, isID);
+        return array;
     }
 
     public Favourite[] getFavouritesByCustomerID(Long id) {
-        // TODO
-        return new Favourite[0];
+        boolean isID = false;
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        int counter = 0;
+
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getCustomerID().equals(id)){
+                    array[counter] = favouriteArray.get(i);        
+                    counter ++;
+                }            
+            } 
+        }
+        
+        mergeSort(array, counter, isID);
+        return array;
     }
 
     public Favourite[] getFavouritesByRestaurantID(Long id) {
-        // TODO
-        return new Favourite[0];
+        boolean isID = false;
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        int counter = 0;
+
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getRestaurantID().equals(id)){
+                    array[counter] = favouriteArray.get(i);        
+                    counter ++;
+                }            
+            } 
+        }
+        
+        mergeSort(array, counter, isID);
+        return array;
     }
 
     public Long[] getCommonFavouriteRestaurants(Long customer1ID, Long customer2ID) {
