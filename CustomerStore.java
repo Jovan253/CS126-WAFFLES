@@ -97,16 +97,15 @@ public class CustomerStore implements ICustomerStore {
                 count ++;
                 return false;
             }
-            else{
-                customerArray.add(customer); 
-            }
+            
         }
         for (int j=0;j<blacklistArray.length;j++){
             if (customer.getID() == blacklistArray[j]){     
                 //customerArray.remove(customer);
                 return false;          
             } 
-        }                           
+        }  
+        customerArray.add(customer);                                 
         return true;
     }
 
@@ -126,9 +125,10 @@ public class CustomerStore implements ICustomerStore {
                 if (customerArray.get(i).getID().equals(id)){
                     return customerArray.get(i);        
                 }            
-            }   
-        }        
-        return null;
+            }               
+        }       
+        return null; 
+
     }
 
     public static void mergeSort(Customer[] a, int n, boolean isID) {
@@ -264,6 +264,7 @@ public class CustomerStore implements ICustomerStore {
         boolean isID = false;
         boolean twoNames = false;        
         int counter = 0;
+        //System.out.println(searchTerm);
         String searchTermNew;
         Customer[] same = new Customer[customerArray.size()];
 
@@ -272,15 +273,21 @@ public class CustomerStore implements ICustomerStore {
             searchTerm = searchTerm.replace("-", "");
         }
 
-        searchTermNew = searchTerm.toLowerCase();
+        searchTermNew = StringFormatter.convertAccents(searchTerm);
+        //System.out.println(searchTermNew);
+        searchTermNew = searchTermNew.toLowerCase();        
+        //System.out.println(searchTermNew);
 
         for (int i=0;i<customerArray.size();i++){
-            if(twoNames != true) {                
-                if (customerArray.get(i).getFirstName().toLowerCase().contains(searchTermNew)){                    
+            if(twoNames != true) {         
+                //System.out.println("Add for a name " + counter);       
+                if (customerArray.get(i).getFirstName().toLowerCase().contains(searchTermNew)){  
+                    //System.out.println("Add for first name " + counter);                  
                     same[counter]=customerArray.get(i);
                     counter++;
                 }
                 else if (customerArray.get(i).getLastName().toLowerCase().contains(searchTermNew)){                    
+                    //System.out.println("Add for last name " + counter);                  
                     same[counter]=customerArray.get(i);
                     counter++;
                 }
@@ -302,5 +309,6 @@ public class CustomerStore implements ICustomerStore {
         mergeSort(array, counter, isID);
         return array;
     }
+
 
 }
