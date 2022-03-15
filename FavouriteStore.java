@@ -94,6 +94,7 @@ public class FavouriteStore implements IFavouriteStore {
             }
             else{
                 favouriteArray.add(favourite); 
+                System.out.println(favouriteArray.size());
             }
         }
         for (int j=0;j<blacklistArray.length;j++){
@@ -101,7 +102,8 @@ public class FavouriteStore implements IFavouriteStore {
                 //customerArray.remove(customer);
                 return false;          
             } 
-        }                           
+        }      
+        //System.out.println(favouriteArray.size());                     
         return true;        
     }
 
@@ -111,7 +113,7 @@ public class FavouriteStore implements IFavouriteStore {
         }
         for (int i=0; i<favourites.length;i++){
             addFavourite(favourites[i]);
-        }
+        }        
         return true;
     }
 
@@ -189,6 +191,71 @@ public class FavouriteStore implements IFavouriteStore {
         }        
     }
 
+    /*
+    public static void mergeSortLong(Long[] a, int n, boolean isID) {
+        if (n < 2) {
+            return;
+        }
+        int mid = n / 2;
+        Long[] l = new Long[mid];
+        Long[] r = new Long[n - mid];
+    
+        for (int i = 0; i < mid; i++) {
+            l[i] = a[i];
+        }
+        for (int i = mid; i < n; i++) {
+            r[i - mid] = a[i];
+        }
+        mergeSortLong(l, mid, isID);
+        mergeSortLong(r, n - mid, isID);
+    
+        mergeLong(a, l, r, mid, n - mid, isID);
+        //return null;
+    }
+
+    public static void mergeLong(Long[] a, Long[] l, Long[] r, int left, int right, boolean isID) {
+ 
+        int i = 0, j = 0, k = 0;
+        if (isID == true){
+            while (i < left && j < right) {
+                if (l[i].getID() <= r[j].getID()) {
+                    a[k++] = l[i++];
+                }
+                else {
+                    a[k++] = r[j++];
+                }
+            }
+        }
+        else{
+            while (i < left && j < right) {
+                if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) < 0) {
+                    a[k++] = l[i++];
+                }
+                else  if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) > 0) {
+                    a[k++] = r[j++];
+                }
+                else{
+                    if (l[i].getID() <= r[j].getID()) {
+                        a[k++] = l[i++];
+                    }
+                    else {
+                        a[k++] = r[j++];
+                    }
+                }
+            }
+        }
+        
+
+
+        while (i < left) {
+            a[k++] = l[i++];
+        }
+        while (j < right) {
+            a[k++] = r[j++];
+        }        
+    }
+    */
+
     public Favourite[] getFavourites() {
         boolean isID = true;                      
         Favourite[] array = new Favourite[favouriteArray.size()];   
@@ -215,6 +282,9 @@ public class FavouriteStore implements IFavouriteStore {
                 }            
             } 
         }
+        else{
+            return new Favourite[0];    
+        }
         
         mergeSort(array, counter, isID);
         return array;
@@ -233,29 +303,176 @@ public class FavouriteStore implements IFavouriteStore {
                 }            
             } 
         }
+        else{
+            return new Favourite[0];    
+        }
         
         mergeSort(array, counter, isID);
         return array;
     }
 
     public Long[] getCommonFavouriteRestaurants(Long customer1ID, Long customer2ID) {
-        // TODO
-        return new Long[0];
+        boolean isID = false;
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        int[] count1 = new int[10];
+        int[] count2 = new int[10];
+        int counter1 = 0;
+        int counter2 = 0;
+       
+        Long resID1;
+        Long resID2;
+        Long[] common = new Long[6];
+
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getCustomerID().equals(customer1ID)){ // find if a customer exists - can be multiple                                                           
+                    count1[counter1] = i;
+                    counter1++;
+                }            
+                if (favouriteArray.get(i).getCustomerID().equals(customer2ID)){ // find if a customer exists                                        
+                    count2[counter2] = i;
+                    counter2++;
+                }            
+            }
+        }
+        else{
+            return new Long[0];    
+        }
+
+        if (counter1 >0 && counter2 > 0){
+            for (int i=0; i<count1.length;i++){                
+                resID1 = favouriteArray.get(count1[i]).getRestaurantID();
+                for (int j=0; j<count2.length;j++){
+                    //resID1 = favouriteArray.get(count1[i]).getRestaurantID();                    
+                    resID2 = favouriteArray.get(count2[j]).getRestaurantID();
+                    if (resID1.equals(resID2)){
+                        if (favouriteArray.get(count1[i]).getDateFavourited().compareTo(favouriteArray.get(count2[j]).getDateFavourited()) < 0){
+                            common[i] = resID1;    
+                        }
+                        else{
+                            common[i] = resID2;                        
+                        }                                             
+                    }                    
+                }
+            }
+        }
+        //mergeSortLong(common, common.length, isID);
+        return common;
     }
 
     public Long[] getMissingFavouriteRestaurants(Long customer1ID, Long customer2ID) {
-        // TODO
-        return new Long[0];
+        boolean isID = false;
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        int[] count1 = new int[10];
+        int[] count2 = new int[10];
+        int counter1 = 0;
+        int counter2 = 0;
+       
+        Long resID1;
+        Long resID2;
+        Long[] uncommon = new Long[6];
+
+        // first find out if the customer exists - ie the ID matches to a customer
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getCustomerID().equals(customer1ID)){ // find if a customer exists - can be multiple                                                           
+                    count1[counter1] = i;
+                    counter1++;
+                }            
+                if (favouriteArray.get(i).getCustomerID().equals(customer2ID)){ // find if a customer exists                                        
+                    count2[counter2] = i;
+                    counter2++;
+                }            
+            }
+        }
+        else{
+            return new Long[0];    
+        }
+
+        if (counter1 >0 && counter2 > 0){
+            for (int i=0; i<count1.length;i++){
+                resID1 = favouriteArray.get(count1[i]).getRestaurantID();
+                for (int j=0; j<count2.length;j++){
+                    //resID1 = favouriteArray.get(count1[i]).getRestaurantID();
+                    resID2 = favouriteArray.get(count2[j]).getRestaurantID();
+                    if (!resID1.equals(resID2)){                        
+                        uncommon[i] = resID1;                                                                         
+                    }                    
+                }
+            }
+        }
+        //mergeSortLong(uncommon, common.length, isID);
+        return uncommon;
     }
 
     public Long[] getNotCommonFavouriteRestaurants(Long customer1ID, Long customer2ID) {
-        // TODO
-        return new Long[0];
+        boolean isID = false;
+        Favourite[] array = new Favourite[favouriteArray.size()];   
+        int[] count1 = new int[10];
+        int[] count2 = new int[10];
+        int counter1 = 0;
+        int counter2 = 0;
+       
+        Long resID1;
+        Long resID2;
+        Long[] uncommon = new Long[6];
+
+        // first find out if the customer exists - ie the ID matches to a customer
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                if (favouriteArray.get(i).getCustomerID().equals(customer1ID)){ // find if a customer exists - can be multiple                                                           
+                    count1[counter1] = i;
+                    counter1++;
+                }            
+                if (favouriteArray.get(i).getCustomerID().equals(customer2ID)){ // find if a customer exists                                        
+                    count2[counter2] = i;
+                    counter2++;
+                }            
+            }
+        }
+        else{
+            return new Long[0];    
+        }
+
+        if (counter1 >0 && counter2 > 0){
+            for (int i=0; i<count1.length;i++){
+                resID1 = favouriteArray.get(count1[i]).getRestaurantID();
+                for (int j=0; j<count2.length;j++){
+                    //resID1 = favouriteArray.get(count1[i]).getRestaurantID();
+                    resID2 = favouriteArray.get(count2[j]).getRestaurantID();
+                    if (!resID1.equals(resID2)){                        
+                        uncommon[i] = resID1;                                                                         
+                    }   
+                    if (!resID2.equals(resID1)){                        
+                        uncommon[i] = resID2;                                                                         
+                    }                 
+                }
+            }
+        }
+        //mergeSortLong(uncommon, common.length, isID);
+        return uncommon;
     }
 
     public Long[] getTopCustomersByFavouriteCount() {
-        // TODO
-        return new Long[20];
+        Long[] top = new Long[20];
+        int counter = 0;
+
+        if (!favouriteArray.isEmpty()){
+            for (int i=0; i<favouriteArray.size();i++){
+                for (int j=0; j<top.length;j++){
+                    if (favouriteArray.get(i).getCustomerID() != top[j]){
+                        top[counter] = favouriteArray.get(i).getCustomerID();
+                        counter++;
+                    }
+                    else{
+                        //change its postition
+                    }
+                }                
+            }
+        }
+        else{
+            return new Long[20];    
+        }
     }
 
     public Long[] getTopRestaurantsByFavouriteCount() {
