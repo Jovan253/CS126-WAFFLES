@@ -7,6 +7,7 @@ import uk.ac.warwick.cs126.models.Restaurant;
 import uk.ac.warwick.cs126.models.Favourite;
 import uk.ac.warwick.cs126.models.Review;
 
+import java.lang.annotation.Repeatable;
 import java.util.Date;
 
 public class DataChecker implements IDataChecker {
@@ -15,14 +16,30 @@ public class DataChecker implements IDataChecker {
         // Initialise things here
     }
 
-    public Long extractTrueID(String[] repeatedID) {
-        // TODO
-        return null;
+    public Long extractTrueID(String[] repeatedID) {        
+        if (repeatedID.length != 3){
+            return null;            
+        }
+        String convertId = "";
+        if (repeatedID[0].equals(repeatedID[1]))
+            convertId = repeatedID[0];
+        else if (repeatedID[0].equals(repeatedID[2]))
+            convertId = repeatedID[0];
+        else if (repeatedID[1].equals(repeatedID[2]))
+            convertId = repeatedID[1];
+        else
+            return null;
+        
+        Long id = Long.parseLong(convertId);
+        if (isValid(id) == false){
+            return null;
+        }
+        return id;        
     }
 
     public boolean isValid(Long inputID) {
         String temp = Long.toString(inputID);
-
+        
         int[] idArray = new int[temp.length()];
 
         // add each digit of inputID to an array so it can be checked
@@ -53,21 +70,37 @@ public class DataChecker implements IDataChecker {
     }
 
     public boolean isValid(Customer customer) {
-        if (customer == null || customer.getFirstName() == null || customer.getLastName() == null || customer.getDateJoined() == null || customer.getStringID() == null){
+        if (customer == null || customer.getFirstName() == null || customer.getLastName() == null 
+        || customer.getDateJoined() == null || customer.getStringID() == null){
             return false;
         }
         Long id = Long.parseLong(customer.getStringID());
         return isValid(id);
     }
 
-    public boolean isValid(Restaurant restaurant) {
-        // TODO
-        return false;
+    public boolean isValid(Restaurant restaurant) {  
+
+        if (restaurant == null || restaurant.getLastInspectedDate().compareTo(restaurant.getDateEstablished()) < 0
+        || restaurant.getFoodInspectionRating() < 0 || restaurant.getFoodInspectionRating() > 5 || restaurant.getWarwickStars() <0
+        || restaurant.getWarwickStars() > 5 || !(restaurant.getCustomerRating() == 0.0 || (restaurant.getCustomerRating() > 1.0 && restaurant.getCustomerRating() <= 5.0))
+        ){
+            return false;
+        }
+                
+        Long validID = extractTrueID(restaurant.getRepeatedID());        
+        // if (!isValid(validID) || validID == null){
+        //     return false;
+        // }
+        restaurant.setID(validID); 
+        return true;
     }
 
     public boolean isValid(Favourite favourite) {
-        // TODO
-        return false;
+        if (favourite == null || isValid(favourite.getCustomerID()) == false || isValid(favourite.getRestaurantID()) == false ){
+            return false;
+        }
+        Long id = Long.parseLong(favourite.getStringID());
+        return isValid(id);
     }
 
     public boolean isValid(Review review) {

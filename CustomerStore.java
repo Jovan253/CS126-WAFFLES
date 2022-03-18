@@ -206,7 +206,7 @@ public class CustomerStore implements ICustomerStore {
         
         for (int i=0;i<array.length;i++){ // potentially implement toArray
             array[i] = customerArray.get(i);         
-            System.out.println(customerArray.get(i).getFirstName());   
+            //System.out.println(customerArray.get(i).getFirstName());   
         }
                       
         mergeSort(array, array.length, isID);
