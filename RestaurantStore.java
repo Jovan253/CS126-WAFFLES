@@ -329,7 +329,7 @@ public class RestaurantStore implements IRestaurantStore {
                 a[k++] = r[j++];
             }
             else{
-                if (l[i].getRestaurant().getID() < r[j].getRestaurant().getID()) {
+                if (l[i].getRestaurant().getID() <= r[j].getRestaurant().getID()) {
                     a[k++] = l[i++];
                 }
                 else {
@@ -433,17 +433,22 @@ public class RestaurantStore implements IRestaurantStore {
         }        
     }
 
-    public RestaurantDistance[] getRestaurantsByDistanceFrom(Restaurant[] restaurants, float latitude, float longitude) {             
-        RestaurantDistance[] array = new RestaurantDistance[restaurantArray.size()];        
-        for (int i=0; i< restaurants.length;i++){            
-            float distance = HaversineDistanceCalculator.inKilometres(latitude, longitude, restaurants[i].getLatitude()
-            , restaurants[i].getLongitude());
-            //System.out.println("Distance " + distance);            
-            array[i] = new RestaurantDistance(restaurants[i], distance);
-            //System.out.println("Array " + array[i]);            
+    public RestaurantDistance[] getRestaurantsByDistanceFrom(Restaurant[] restaurants, float latitude, float longitude) { 
+        if (restaurants.length != 0){             
+            RestaurantDistance[] array = new RestaurantDistance[restaurants.length];        
+            for (int i=0; i< restaurants.length;i++){            
+                float distance = HaversineDistanceCalculator.inKilometres(latitude, longitude, restaurants[i].getLatitude()
+                , restaurants[i].getLongitude());
+                //System.out.println("Distance " + distance);            
+                array[i] = new RestaurantDistance(restaurants[i], distance);
+                //System.out.println("Array " + array[i]);            
+            }
+            mergeSortDistance(array, array.length); // need different merge sort!!!            
+            return array;
         }
-        mergeSortDistance(array, array.length); // need different merge sort!!!            
-        return array;
+        else{        
+            return new RestaurantDistance[0];
+        } 
     }
 
     public static int isSubstring(String s1, String s2){        

@@ -9,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import uk.ac.warwick.cs126.structures.HashMap;
+import uk.ac.warwick.cs126.structures.MyMap;
+
 import javax.lang.model.element.Element;
 
 import org.apache.commons.io.IOUtils;
@@ -23,6 +26,7 @@ public class FavouriteStore implements IFavouriteStore {
     private DataChecker dataChecker;
     private Long[] blacklistArray = new Long[5];   
     private int count = 0;
+    private HashMap<Long, Integer> relation = new HashMap<>();           
 
     public FavouriteStore() {
         // Initialise variables here
@@ -94,7 +98,14 @@ public class FavouriteStore implements IFavouriteStore {
                 blacklistArray[count] = favourite.getID();
                 count ++;
                 return false;
-            }            
+            } 
+            else if (favouriteArray.get(i).getCustomerID() == favourite.getCustomerID()
+            || favouriteArray.get(i).getRestaurantID() == favourite.getRestaurantID()){
+                if (favourite.getDateFavourited().compareTo(favouriteArray.get(i).getDateFavourited()) > 0){
+                    favouriteArray.remove(favouriteArray.get(i));
+                    blacklistArray[count++] = favourite.getID();
+                }
+            }           
         }
         for (int j=0;j<blacklistArray.length;j++){
             if (favourite.getID() == blacklistArray[j]){ // only add customer if not a duplicate and valid and blacklists
@@ -102,8 +113,7 @@ public class FavouriteStore implements IFavouriteStore {
                 return false;          
             } 
         }      
-        favouriteArray.add(favourite); 
-        //System.out.println(favouriteArray.size());                     
+        favouriteArray.add(favourite);                             
         return true;        
     }
 
@@ -111,9 +121,9 @@ public class FavouriteStore implements IFavouriteStore {
         if (favourites.length == 0){
             return false;
         }
-        for (int i=0; i<favourites.length;i++){
-            addFavourite(favourites[i]);
-        }        
+        for (int i=0; i<favourites.length;i++){            
+            addFavourite(favourites[i]);            
+        }                
         return true;
     }
 
@@ -259,6 +269,69 @@ public class FavouriteStore implements IFavouriteStore {
                     }
                 }       
             }
+        }
+        
+
+
+        while (i < left) {
+            a[k++] = l[i++];
+        }
+        while (j < right) {
+            a[k++] = r[j++];
+        }        
+    }
+
+    public static void mergeSortTop(Favourite[] a, int n, HashMap relation) {
+        if (n < 2) {
+            return;
+        }
+        int mid = n / 2;
+        Favourite[] l = new Favourite[mid];
+        Favourite[] r = new Favourite[n - mid];
+    
+        for (int i = 0; i < mid; i++) {
+            l[i] = a[i];
+        }
+        for (int i = mid; i < n; i++) {
+            r[i - mid] = a[i];
+        }
+        mergeSortTop(l, mid, relation);
+        mergeSortTop(r, n - mid, relation);
+    
+        mergeTop(a, l, r, mid, n - mid, relation);        
+    }
+
+    public static void mergeTop(Favourite[] a, Favourite[] l, Favourite[] r, int left, int right, HashMap relation) {
+ 
+        int i = 0, j = 0, k = 0;
+                
+        while (i < left && j < right) {                
+            int num1 = (Integer) relation.find(l[i].getCustomerID());
+            int num2 = (Integer) relation.find(r[j].getCustomerID());            
+            if (num1 > num2){
+                //System.out.println("1 " + " " + i+ " " +relation.find(l[i].getCustomerID()));
+                a[k++] = l[i++];
+            }   
+            else if (num1 < num2){
+                //System.out.println("2 " + " " + j+ " "+relation.find(r[j].getCustomerID()));
+                a[k++] = r[j++];
+            }  
+            else{
+                if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) > 0) {
+                    a[k++] = l[i++];
+                }
+                else  if (l[i].getDateFavourited().compareTo(r[j].getDateFavourited()) < 0) {
+                    a[k++] = r[j++];
+                }
+                else{
+                    if (l[i].getID() <= r[j].getID()) {
+                        a[k++] = l[i++];
+                    }
+                    else {
+                        a[k++] = r[j++];
+                    }
+                }
+            }       
         }
         
 
@@ -554,26 +627,72 @@ public class FavouriteStore implements IFavouriteStore {
         return ids;        
     }
 
-    public Long[] getTopCustomersByFavouriteCount() {
-        Favourite[] top = new Favourite[favouriteArray.size()];
+    public Long[] getTopCustomersByFavouriteCount() {                              
+        HashMap<Long, Integer> relation = new HashMap<>();   
+        MyArrayList<Favourite> array = new MyArrayList<>();    
         int counter = 0;
-        if (favouriteArray.size() < 20){
-            return null;
-        }
-        else if (!favouriteArray.isEmpty()){
-            for (int i=0; i<favouriteArray.size();i++){
-                top[counter++] = favouriteArray.get(i);                
-            }
+        int count = 0;
+        int topCount = 0;
+        boolean found = false;
+        Long[] var = new Long[favouriteArray.size()];
+        Favourite[] sort = new Favourite[favouriteArray.size()];
+        Favourite[] temp = new Favourite[favouriteArray.size()];        
+         
+
+        if (!favouriteArray.isEmpty()){
+            for (int i = 0; i < favouriteArray.size(); i++) {
+                sort[i] = favouriteArray.get(i);                
+            } 
+            mergeSort(sort, sort.length, "cTop");
+            
         }
         else{
-            return new Long[20];    
+            return new Long[0];    
         }
-        mergeSort(top, counter, "cTop");
+
+        int j = 0;  
+        Favourite[] cID = new Favourite[sort.length];
+        for (int m = 0; m < sort.length - 1; m++) {
+            relation.add(sort[m].getCustomerID(), 1);
+            if (!sort[m].getCustomerID().equals(sort[m+1].getCustomerID())) {
+                cID[j++] = sort[m];
+               // relation.add(sort[m].getCustomerID(), 1)
+            }
+        }
+
+        for (int l = 0; l < sort.length - 1; l++) {
+            for (int k=0;k<favouriteArray.size();k++){
+                if (favouriteArray.get(k).getCustomerID().equals(sort[l].getCustomerID())){
+                    counter++;
+                }
+            }
+            relation.add(sort[l].getCustomerID(), counter);
+            counter = 0;
+        }
+  
+        cID[j++] = sort[sort.length - 1];
+
+        int length = j;
+        if (j < 20){
+            return null;
+        }
+        
+        
+            
+        // Favourite[] bruh = new Favourite[array.size()];
+        // for (int i=0;i<array.size();i++){
+        //     bruh[i] = array.get(i);
+        //     //System.out.println(bruh[i]);
+        // }
+    
+        mergeSortTop(cID, j, relation);
+
         Long[] ids = new Long[20];
         for (int x=0;x<20;x++){
-           ids[x] = top[x].getCustomerID();
+           ids[x] = cID[x].getCustomerID();
         }
         return ids; 
+        //return new Long[20];       
     }
 
     public Long[] getTopRestaurantsByFavouriteCount() {
